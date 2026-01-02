@@ -485,9 +485,9 @@
         <a href="#docs" class="nav-link" onclick="showSection('docs')">Docs</a>
         <a href="#api" class="nav-link" onclick="showSection('api')">API</a>
         <div class="theme-switcher">
-          <button class="theme-btn" onclick="setTheme('light')" title="Light Mode">☀️</button>
-          <button class="theme-btn active" onclick="setTheme('default')" title="Default Mode">💻</button>
-          <button class="theme-btn" onclick="setTheme('dark')" title="Dark Mode">🌙</button>
+          <button class="theme-btn" onclick="setTheme('light')" title="Light Mode" id="lightBtn">☀️</button>
+          <button class="theme-btn active" onclick="setTheme('auto')" title="Auto (System)" id="autoBtn">💻</button>
+          <button class="theme-btn" onclick="setTheme('dark')" title="Dark Mode" id="darkBtn">🌙</button>
         </div>
       </nav>
     </div>
@@ -756,30 +756,72 @@ Content-Type: application/json<br><br>
   <div id="toast" class="toast"></div>
 
   <script>
+    // Detect system theme preference
+    function getSystemTheme() {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+      return 'light';
+    }
+
     // Theme Management
-    let currentTheme = localStorage.getItem('theme') || 'default';
+    let currentTheme = localStorage.getItem('theme') || 'auto';
     
-    function setTheme(theme) {
-      currentTheme = theme;
-      localStorage.setItem('theme', theme);
-      
-      if (theme === 'dark') {
+    function applyTheme(theme) {
+      if (theme === 'auto') {
+        const systemTheme = getSystemTheme();
+        if (systemTheme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+        }
+      } else if (theme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
       } else {
         document.documentElement.removeAttribute('data-theme');
       }
-      
-      document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-      
-      showToast(`Theme changed to ${theme} mode`, 'success');
     }
 
-    // Initialize theme
+    function setTheme(theme) {
+      currentTheme = theme;
+      localStorage.setItem('theme', theme);
+      applyTheme(theme);
+      
+      // Update active button
+      document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+      if (theme === 'light') {
+        document.getElementById('lightBtn').classList.add('active');
+      } else if (theme === 'dark') {
+        document.getElementById('darkBtn').classList.add('active');
+      } else {
+        document.getElementById('autoBtn').classList.add('active');
+      }
+      
+      const themeNames = {
+        'light': 'Light',
+        'dark': 'Dark',
+        'auto': 'Auto (follows system)'
+      };
+      showToast(`Theme changed to ${themeNames[theme]} mode`, 'success');
+    }
+
+    // Initialize theme on page load
+    applyTheme(currentTheme);
     if (currentTheme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      document.querySelectorAll('.theme-btn')[2].classList.add('active');
-      document.querySelectorAll('.theme-btn')[1].classList.remove('active');
+      document.getElementById('darkBtn').classList.add('active');
+      document.getElementById('autoBtn').classList.remove('active');
+    } else if (currentTheme === 'light') {
+      document.getElementById('lightBtn').classList.add('active');
+      document.getElementById('autoBtn').classList.remove('active');
+    }
+
+    // Listen for system theme changes
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (currentTheme === 'auto') {
+          applyTheme('auto');
+        }
+      });
     }
 
     // Navigation
@@ -893,7 +935,6 @@ Content-Type: application/json<br><br>
 
       try {
         if (backendOnline) {
-          // Try backend first
           const response = await fetch('http://localhost:8000/detect', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -948,11 +989,9 @@ Content-Type: application/json<br><br>
     function displayResults(detections, processingTime, summary = null) {
       document.getElementById('loading').style.display = 'none';
       
-      // Update stats
       document.getElementById('piiCount').textContent = detections.length;
       document.getElementById('processingTime').textContent = Math.round(processingTime) + 'ms';
       
-      // Calculate risk score
       const riskWeights = { 'CRITICAL': 100, 'HIGH': 70, 'MEDIUM': 40, 'LOW': 20 };
       const riskScore = detections.length > 0 
         ? Math.min(Math.round((detections.reduce((sum, d) => 
@@ -961,7 +1000,6 @@ Content-Type: application/json<br><br>
       
       document.getElementById('riskScore').textContent = riskScore + '%';
       
-      // Update risk meter
       const riskFill = document.getElementById('riskFill');
       riskFill.style.width = riskScore + '%';
       
@@ -979,7 +1017,6 @@ Content-Type: application/json<br><br>
         riskFill.textContent = 'CRITICAL RISK';
       }
 
-      // Display PII types
       if (!summary) {
         summary = {};
         detections.forEach(d => {
@@ -1004,7 +1041,6 @@ Content-Type: application/json<br><br>
           `).join('');
       }
 
-      // Display detailed results
       if (detections.length === 0) {
         document.getElementById('results').innerHTML = `
           <div class="alert alert-success">
@@ -1026,7 +1062,6 @@ Content-Type: application/json<br><br>
       }
     }
 
-    // Protect PII Function
     function protectPII() {
       const text = document.getElementById('inputText').value;
       
@@ -1057,7 +1092,6 @@ Content-Type: application/json<br><br>
       showToast('Text protected successfully', 'success');
     }
 
-    // Copy Protected Text
     function copyProtected() {
       const protectedText = document.querySelector('.protected-text').textContent;
       navigator.clipboard.writeText(protectedText).then(() => {
@@ -1067,7 +1101,6 @@ Content-Type: application/json<br><br>
       });
     }
 
-    // Load Sample
     function loadSample() {
       document.getElementById('inputText').value = `Hi, I'm John Smith. My email is john.smith@company.com and my phone is (555) 123-4567.
 My SSN is 123-45-6789 and I live at 123 Main Street, New York, NY 10001.
@@ -1076,7 +1109,6 @@ My ZIP code is 10001 and I was born on 05/15/1985.`;
       showToast('Sample text loaded', 'info');
     }
 
-    // Clear All
     function clearAll() {
       document.getElementById('inputText').value = '';
       document.getElementById('results').innerHTML = `
@@ -1111,7 +1143,6 @@ My ZIP code is 10001 and I was born on 05/15/1985.`;
       showToast('SecureGuard AI initialized successfully', 'success');
     });
 
-    // Periodic backend check
     setInterval(checkBackendStatus, 30000);
   </script>
 </body>
