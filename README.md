@@ -6,7 +6,8 @@
     <title>GitHub Pages Site</title>
 </head>
 <body>
-# 🛡️ SecureGuard AI
+    
+# 🛡️ SecureGuard AI - Enterprise-Grade PII Detection & Protection Platform
 
 **Protecting Your Personal Information with Artificial Intelligence**
 
