@@ -550,22 +550,6 @@
       line-height: 1.6;
     }
 
-    .code-block {
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin: 1rem 0;
-      overflow-x: auto;
-    }
-
-    .code-block code {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.85rem;
-      line-height: 1.6;
-      color: var(--text-secondary);
-    }
-
     .backend-status {
       display: inline-flex;
       align-items: center;
@@ -604,7 +588,6 @@
         <a href="#home" class="nav-link active" onclick="showSection('home')">Overview</a>
         <a href="#demo" class="nav-link" onclick="showSection('demo')">Detection</a>
         <a href="#docs" class="nav-link" onclick="showSection('docs')">Architecture</a>
-        <a href="#api" class="nav-link" onclick="showSection('api')">API</a>
         <div class="theme-toggle">
           <button class="theme-btn" onclick="setTheme('light')" id="lightBtn" title="Light">☀️</button>
           <button class="theme-btn active" onclick="setTheme('auto')" id="autoBtn" title="Auto">💻</button>
@@ -827,62 +810,6 @@ Payment: 4532-1234-5678-9010 | IP: 192.168.1.100"></textarea>
               <div class="feature-desc">Format-preserving anonymization with utility preservation.</div>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- API SECTION -->
-    <section id="api" class="section-container">
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-title">API Reference</h2>
-        </div>
-        
-        <div style="margin-top: 1.5rem;">
-          <label class="input-label">Detection Endpoint</label>
-          <div class="code-block">
-            <code>POST /detect
-Content-Type: application/json
-
-{
-  "text": "My email is john@example.com"
-}</code>
-          </div>
-        </div>
-
-        <div style="margin-top: 1.5rem;">
-          <label class="input-label">Response Format</label>
-          <div class="code-block">
-            <code>{
-  "detections": [{
-    "type": "Email Address",
-    "value": "john@example.com",
-    "confidence": 0.95,
-    "position": {"start": 12, "end": 29},
-    "riskLevel": "MEDIUM"
-  }],
-  "risk_score": 45,
-  "processing_time_ms": 87
-}</code>
-          </div>
-        </div>
-
-        <div style="margin-top: 1.5rem;">
-          <label class="input-label">Protection Endpoint</label>
-          <div class="code-block">
-            <code>POST /protect
-Content-Type: application/json
-
-{
-  "text": "My SSN is 123-45-6789",
-  "protection_method": "redact"
-}</code>
-          </div>
-        </div>
-
-        <div class="alert alert-info" style="margin-top: 1.5rem;">
-          <span>ℹ️</span>
-          <span>Interactive API documentation available at <code>/docs</code> when backend is running.</span>
         </div>
       </div>
     </section>
